@@ -1,0 +1,19 @@
+# Virtual environment
+.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Environment variables
+.env
+
+# uv lockfile (optional, wenn du es nicht tracken willst)
+uv.lock
+
+# VS Code settings
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
