@@ -4,35 +4,29 @@ from fastapi import FastAPI
 from .api.routes import router as api_router
 from .web.routes import router as web_router
 from .store import init_current_tags
-from .opcua_server import OpcUaServer
-from .services.simulator import Simulator
+from .opcua_client import OpcUaReader
 from .config import settings
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(title="RPI OPC UA Server + REST")
+    app = FastAPI(title="RPI OPC UA Client + REST")
 
     app.include_router(api_router)
     app.include_router(web_router)
 
-    opcua_server = OpcUaServer(endpoint=settings.OPCUA_ENDPOINT)
-    simulator = Simulator(interval_sec=settings.SIM_INTERVAL_SEC)
+    reader = OpcUaReader(
+        endpoint=settings.OPCUA_ENDPOINT,
+        poll_interval=settings.POLL_INTERVAL_SEC,
+    )
 
     @app.on_event("startup")
     async def _startup():
         init_current_tags()
-
-        # Start background tasks
-        app.state.tasks = []
-        app.state.tasks.append(asyncio.create_task(opcua_server.run_forever()))
-        if settings.ENABLE_SIMULATOR:
-            app.state.tasks.append(asyncio.create_task(simulator.run_forever()))
+        app.state.tasks = [asyncio.create_task(reader.run_forever())]
 
     @app.on_event("shutdown")
     async def _shutdown():
-        # Stop tasks gracefully
-        await opcua_server.stop()
-        await simulator.stop()
+        await reader.stop()
 
         tasks = getattr(app.state, "tasks", [])
         for t in tasks:

@@ -53,7 +53,7 @@ class OpcUaServer:
         # Create variables
         nodes: Dict[str, Any] = {}
         for name, cfg in TAGS_CONFIG.items():
-            vtype = ua.VariantType.Float if cfg["type"] == "REAL" else ua.VariantType.Boolean
+            vtype = ua.VariantType.Double if cfg["type"] == "REAL" else ua.VariantType.Boolean
             initial = 0.0 if cfg["type"] == "REAL" else False
 
             var = await rpi_obj.add_variable(ns_idx, name, ua.Variant(initial, vtype))
