@@ -1,4 +1,6 @@
+# app/__init__.py
 import asyncio
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from .api.routes import router as api_router
@@ -9,28 +11,29 @@ from .config import settings
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(title="RPI OPC UA Client + REST")
-
-    app.include_router(api_router)
-    app.include_router(web_router)
-
     reader = OpcUaReader(
         endpoint=settings.OPCUA_ENDPOINT,
         poll_interval=settings.POLL_INTERVAL_SEC,
     )
 
-    @app.on_event("startup")
-    async def _startup():
+    @asynccontextmanager
+    async def lifespan(app: FastAPI):
         init_current_tags()
-        app.state.tasks = [asyncio.create_task(reader.run_forever())]
+        task = asyncio.create_task(reader.run_forever())
+        app.state.tasks = [task]
+        try:
+            yield
+        finally:
+            await reader.stop()
+            for t in app.state.tasks:
+                t.cancel()
+            await asyncio.gather(*app.state.tasks, return_exceptions=True)
 
-    @app.on_event("shutdown")
-    async def _shutdown():
-        await reader.stop()
+    app = FastAPI(
+        title="RPI OPC UA Client + REST + Web",
+        lifespan=lifespan,
+    )
 
-        tasks = getattr(app.state, "tasks", [])
-        for t in tasks:
-            t.cancel()
-        await asyncio.gather(*tasks, return_exceptions=True)
-
+    app.include_router(api_router)
+    app.include_router(web_router)
     return app

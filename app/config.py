@@ -1,40 +1,56 @@
+# config.py
 import os
 from dataclasses import dataclass
-
 
 @dataclass(frozen=True)
 class Settings:
     OPCUA_ENDPOINT: str = os.getenv("OPCUA_ENDPOINT", "opc.tcp://192.168.3.12:4840")
     POLL_INTERVAL_SEC: float = float(os.getenv("POLL_INTERVAL_SEC", "0.5"))
-    ENABLE_SIMULATOR: bool = os.getenv("ENABLE_SIMULATOR", "0") not in ("0", "false", "False")
-
+    OPCUA_USERNAME: str = os.getenv("OPCUA_USERNAME", "")
+    OPCUA_PASSWORD: str = os.getenv("OPCUA_PASSWORD", "")
+    ENABLE_SIMULATOR: bool = os.getenv("ENABLE_SIMULATOR", "0").lower() not in ("0", "false")
 
 settings = Settings()
 
 TAGS_CONFIG = {
     "always_true": {
+        "plc_name": "AlwaysTRUE",
         "type": "BOOL",
         "unit": "",
-        "nodeid": "ns=3;s=AlwaysTRUE",
+        "nodeid": "ns=2;i=2",
     },
     "g1_bg1_left_sensor": {
+        "plc_name": "G1-BG1",
         "type": "BOOL",
         "unit": "",
-        "nodeid": "ns=3;s=G1-BG1",
+        "nodeid": "ns=2;i=3",
+        "description": "optischer Sensor Links (NC)",
     },
     "g1_bg2_right_sensor": {
+        "plc_name": "G1-BG2",
         "type": "BOOL",
         "unit": "",
-        "nodeid": "ns=3;s=G1-BG2",
+        "nodeid": "ns=2;i=4",
+        "description": "optischer Sensor Rechts (NC)",
+    },
+    "c1_bg1_rear_position": {
+        "plc_name": "C1-BG1",
+        "type": "BOOL",
+        "unit": "",
+        "nodeid": "ns=2;i=5",
+        "description": "Zylinder hintere Endlage (NO)",
     },
     "c1_bg2_front_position": {
+        "plc_name": "C1-BG2",
         "type": "BOOL",
         "unit": "",
-        "nodeid": "ns=3;s=C1-BG2",
+        "nodeid": "ns=2;i=6",
+        "description": "Zylinder vordere Endlage (NO)",
     },
-    "c1_bg3_rear_position": {
-        "type": "BOOL",
+    "analog_druck_out": {
+        "plc_name": "AnalogDruckOut",
+        "type": "UInt32",   # statt DWORD im REST/UI besser OPC-UA-nah
         "unit": "",
-        "nodeid": "ns=3;s=C1-BG3",
+        "nodeid": "ns=2;i=7",
     },
 }
