@@ -1,4 +1,8 @@
 # store.py
+
+# Hier werden die aktuellen Werte der Tags im Speicher gehalten.
+# Standardwerte setzten und daten auch bei verbindungsproblemen verfügbar halten, damit die API und Web-Interface damit arbeiten können.
+
 import time
 from typing import Any, Dict
 from .config import TAGS_CONFIG

@@ -1,4 +1,8 @@
 # config.py
+
+# Hier werden die Einstellungen für die OPC UA Verbindung und die Tag-Konfiguration definiert.
+# Die Tags werden mit Eigenschaften konfiguriert, die den Zugriff und die Interpretation der Werte erleichtern.
+
 import os
 from dataclasses import dataclass
 
@@ -48,9 +52,10 @@ TAGS_CONFIG = {
         "description": "Zylinder vordere Endlage (NO)",
     },
     "analog_druck_out": {
-        "plc_name": "AnalogDruckOut",
-        "type": "UInt32",
-        "unit": "",
-        "nodeid": 'ns=3;s="AnalogDruckOut"',
+    "plc_name": "AnalogDruckOut",
+    "type": "UInt32",
+    "display_type": "FLOAT32_FROM_DWORD",
+    "unit": "bar",
+    "nodeid": 'ns=3;s="AnalogDruckOut"',
     },
 }

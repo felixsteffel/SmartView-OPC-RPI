@@ -1,3 +1,8 @@
+# routes.py
+
+# Hier werden die Web-Routen definiert, die das Web-Interface bereitstellen.
+# Die grafische Darstellung wird mit Bootstrap gestaltet und zeigt die aktuellen Werte der Tags an
+
 from fastapi import APIRouter
 from fastapi.responses import HTMLResponse
 

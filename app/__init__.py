@@ -1,4 +1,8 @@
 # app/__init__.py
+
+# Hier wird die FastAPI-Anwendung erstellt,
+# die OPC UA Verbindung verwaltet und die API- sowie Web-Routen eingebunden.
+
 import asyncio
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
@@ -19,6 +23,7 @@ def create_app() -> FastAPI:
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         init_current_tags()
+        app.state.opcua_reader = reader
         task = asyncio.create_task(reader.run_forever())
         app.state.tasks = [task]
         try:
@@ -29,10 +34,7 @@ def create_app() -> FastAPI:
                 t.cancel()
             await asyncio.gather(*app.state.tasks, return_exceptions=True)
 
-    app = FastAPI(
-        title="RPI OPC UA Client + REST + Web",
-        lifespan=lifespan,
-    )
+    app = FastAPI(title="RPI OPC UA Client + REST + Web", lifespan=lifespan)
 
     app.include_router(api_router)
     app.include_router(web_router)

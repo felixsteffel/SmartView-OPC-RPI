@@ -1,5 +1,9 @@
 # app/api/routes.py
-from fastapi import APIRouter, HTTPException
+
+# prüft den Status der Verbindung zum OPC UA Server und 
+# ermöglicht das Lesen und Schreiben von Tags über HTTP-Endpoints.
+
+from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
 
 from ..store import CURRENT_TAGS, now_ms
@@ -8,61 +12,18 @@ from ..config import TAGS_CONFIG
 router = APIRouter(prefix="/api", tags=["api"])
 
 
-# =========================
-# Models
-# =========================
 class SetTagBody(BaseModel):
     value: float | int | bool
 
 
-# =========================
-# Helpers
-# =========================
-def cast_value(expected_type: str, val):
-    """
-    Castet REST-Werte sauber auf OPC-UA / Siemens Datentypen
-    """
-    if expected_type in ("BOOL",):
-        if isinstance(val, bool):
-            return val
-        if val in (0, 1):
-            return bool(val)
-        raise HTTPException(status_code=400, detail="Expected BOOL (true/false or 0/1)")
+def is_float_display_tag(name: str) -> bool:
+    cfg = TAGS_CONFIG.get(name, {})
+    return cfg.get("display_type") == "FLOAT32_FROM_DWORD"
 
-    if expected_type in ("REAL", "LREAL"):
-        if isinstance(val, bool):
-            raise HTTPException(status_code=400, detail="Expected number, got BOOL")
-        return float(val)
-
-    if expected_type in ("UInt32", "DWORD", "UDINT"):
-        if isinstance(val, bool):
-            raise HTTPException(status_code=400, detail="Expected integer, got BOOL")
-        iv = int(val)
-        if iv < 0 or iv > 0xFFFFFFFF:
-            raise HTTPException(status_code=400, detail="Value out of range for UInt32")
-        return iv
-
-    if expected_type in ("INT", "DINT", "UINT"):
-        if isinstance(val, bool):
-            raise HTTPException(status_code=400, detail="Expected integer, got BOOL")
-        return int(val)
-
-    # fallback
-    return val
-
-
-# =========================
-# Routes
-# =========================
 
 @router.get("/health")
 async def health():
-    """
-    Einfacher Health-Check:
-    - mindestens ein Tag 'good' => verbunden
-    """
-    connected = any(t["quality"] == "good" for t in CURRENT_TAGS.values())
-
+    connected = any(t["quality"] in ("good", "written") for t in CURRENT_TAGS.values())
     return {
         "status": "ok" if connected else "degraded",
         "connected": connected,
@@ -85,40 +46,56 @@ async def get_one_tag(name: str):
     tag = CURRENT_TAGS.get(name)
     if not tag:
         raise HTTPException(status_code=404, detail=f"Tag '{name}' not found")
-
     return tag
 
 
 @router.post("/tags/{name}")
-async def set_one_tag(name: str, body: SetTagBody):
-    """
-    Setzt einen Tag via REST.
-
-    WICHTIG:
-    Aktuell wird nur der lokale Cache gesetzt.
-    -> Für echtes Schreiben in die S7 musst du hier OPC UA write_value() ergänzen.
-    """
+async def set_one_tag(name: str, body: SetTagBody, request: Request):
     if name not in TAGS_CONFIG:
         raise HTTPException(status_code=404, detail=f"Tag '{name}' not configured")
 
     cfg = TAGS_CONFIG[name]
     expected_type = cfg["type"]
 
-    # sauber casten
-    value = cast_value(expected_type, body.value)
+    if expected_type == "BOOL":
+        if isinstance(body.value, bool):
+            user_value = body.value
+        elif body.value in (0, 1):
+            user_value = bool(body.value)
+        else:
+            raise HTTPException(status_code=400, detail="Expected BOOL (true/false or 0/1)")
 
-    # aktuellen Tag holen
-    tag = CURRENT_TAGS.get(name)
-    if not tag:
-        raise HTTPException(status_code=500, detail="Tag not initialized")
+    elif expected_type in ("REAL", "LREAL"):
+        if isinstance(body.value, bool):
+            raise HTTPException(status_code=400, detail="Expected number, got BOOL")
+        user_value = float(body.value)
 
-    # update
-    tag["value"] = value
-    tag["ts_client_ms"] = now_ms()
-    tag["quality"] = "set-via-rest"
-    tag["status_code"] = "Good (LocalWrite)"
+    elif expected_type in ("UInt32", "DWORD", "UDINT"):
+        if isinstance(body.value, bool):
+            raise HTTPException(status_code=400, detail="Expected number, got BOOL")
 
-    return {
-        "ok": True,
-        "tag": tag,
-    }
+        if is_float_display_tag(name):
+            user_value = float(body.value)
+        else:
+            iv = int(body.value)
+            if iv < 0 or iv > 0xFFFFFFFF:
+                raise HTTPException(status_code=400, detail="Value out of range for UInt32")
+            user_value = iv
+
+    elif expected_type in ("INT", "DINT", "UINT"):
+        if isinstance(body.value, bool):
+            raise HTTPException(status_code=400, detail="Expected integer, got BOOL")
+        user_value = int(body.value)
+
+    else:
+        user_value = body.value
+
+    reader = getattr(request.app.state, "opcua_reader", None)
+    if reader is None:
+        raise HTTPException(status_code=500, detail="OPC UA reader not available")
+
+    try:
+        tag = await reader.write_tag(name, user_value)
+        return {"ok": True, "tag": tag}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"{type(e).__name__}: {e}")

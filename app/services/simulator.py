@@ -1,3 +1,8 @@
+# simulator.py
+
+# Diese Klasse simuliert die Werte der Tags, bis eine echte Datenquelle vorhanden ist.
+# Sie generiert periodisch neue Werte für die konfigurierten Tags und speichert sie im CURRENT_TAGS-Dictionary, damit die API und Web-Interface damit arbeiten können.
+
 import asyncio
 import random
 
