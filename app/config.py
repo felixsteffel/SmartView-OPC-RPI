@@ -52,10 +52,25 @@ TAGS_CONFIG = {
         "description": "Zylinder vordere Endlage (NO)",
     },
     "analog_druck_out": {
-    "plc_name": "AnalogDruckOut",
-    "type": "UInt32",
-    "display_type": "FLOAT32_FROM_DWORD",
-    "unit": "bar",
-    "nodeid": 'ns=3;s="AnalogDruckOut"',
+        "plc_name": "AnalogDruckOut",
+        "type": "UInt32",
+        "display_type": "FLOAT32_FROM_DWORD",
+        "unit": "bar",
+        "nodeid": 'ns=3;s="AnalogDruckOut"',
     },
+    "Zylinder ausfahren": {
+        "plc_name": "C1-MB1",
+        "type": "BOOL",
+        "unit": "",
+        "nodeid": 'ns=3;s="C1-MB1"',
+    },
+    "Zylinder einfahren": {
+        "plc_name": "C1-MB2",
+        "type": "BOOL",
+        "unit": "",
+        "nodeid": 'ns=3;s="C1-MB2"',
+    },
+
+
+
 }

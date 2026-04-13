@@ -1,3 +1,6 @@
+# debug2.py
+# Dieses Skript verbindet sich mit dem OPC UA Server, durchsucht die Knoten und versucht, die NodeIDs der angegebenen Ziel-Tags zu finden.
+
 import asyncio
 from asyncua import Client
 

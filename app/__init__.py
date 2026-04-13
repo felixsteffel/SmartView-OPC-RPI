@@ -16,9 +16,10 @@ from .config import settings
 
 def create_app() -> FastAPI:
     reader = OpcUaReader(
-        endpoint=settings.OPCUA_ENDPOINT,
-        poll_interval=settings.POLL_INTERVAL_SEC,
-    )
+    endpoint=settings.OPCUA_ENDPOINT,
+    publish_interval_ms=int(settings.POLL_INTERVAL_SEC * 1000),
+)
+
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
