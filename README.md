@@ -57,7 +57,7 @@ SPS (S7-1500)
    ▼
 Raspberry Pi (OpcUaReader)
    │
-   │ Polling
+   │ Subscription
    ▼
 CURRENT_TAGS (In-Memory Store)
    │
