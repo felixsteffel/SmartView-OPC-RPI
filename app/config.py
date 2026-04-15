@@ -14,6 +14,10 @@ class Settings:
     OPCUA_PASSWORD: str = os.getenv("OPCUA_PASSWORD", "")
     ENABLE_SIMULATOR: bool = os.getenv("ENABLE_SIMULATOR", "0").lower() not in ("0", "false")
 
+    WEB_USERNAME: str = os.getenv("WEB_USERNAME", "ADMIN")
+    WEB_PASSWORD: str = os.getenv("WEB_PASSWORD", "9865")
+    SESSION_SECRET: str = os.getenv("SESSION_SECRET", "bitte-aendern-session-secret")
+
 settings = Settings()
 
 TAGS_CONFIG = {
@@ -28,28 +32,28 @@ TAGS_CONFIG = {
         "type": "BOOL",
         "unit": "",
         "nodeid": 'ns=3;s="G1-BG1"',
-        "description": "optischer Sensor Links (NC)",
+        "description": "Optischer Sensor Links",
     },
     "g1_bg2_right_sensor": {
         "plc_name": "G1-BG2",
         "type": "BOOL",
         "unit": "",
         "nodeid": 'ns=3;s="G1-BG2"',
-        "description": "optischer Sensor Rechts (NC)",
+        "description": "Optischer Sensor Rechts",
     },
     "c1_bg1_rear_position": {
         "plc_name": "C1-BG1",
         "type": "BOOL",
         "unit": "",
         "nodeid": 'ns=3;s="C1-BG1"',
-        "description": "Zylinder hintere Endlage (NO)",
+        "description": "Zylinder hintere Endlage",
     },
     "c1_bg2_front_position": {
         "plc_name": "C1-BG2",
         "type": "BOOL",
         "unit": "",
         "nodeid": 'ns=3;s="C1-BG2"',
-        "description": "Zylinder vordere Endlage (NO)",
+        "description": "Zylinder vordere Endlage",
     },
     "analog_druck_out": {
         "plc_name": "AnalogDruckOut",
@@ -57,20 +61,20 @@ TAGS_CONFIG = {
         "display_type": "FLOAT32_FROM_DWORD",
         "unit": "bar",
         "nodeid": 'ns=3;s="AnalogDruckOut"',
+        "description": "Druck",
     },
     "Zylinder ausfahren": {
         "plc_name": "C1-MB1",
         "type": "BOOL",
         "unit": "",
         "nodeid": 'ns=3;s="C1-MB1"',
+        "description": "Zylinder ausfahren",
     },
     "Zylinder einfahren": {
         "plc_name": "C1-MB2",
         "type": "BOOL",
         "unit": "",
         "nodeid": 'ns=3;s="C1-MB2"',
+        "description": "Zylinder einfahren",
     },
-
-
-
 }

@@ -6,6 +6,8 @@
 import asyncio
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
+from starlette.middleware.sessions import SessionMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from .api.routes import router as api_router
 from .web.routes import router as web_router
@@ -16,10 +18,9 @@ from .config import settings
 
 def create_app() -> FastAPI:
     reader = OpcUaReader(
-    endpoint=settings.OPCUA_ENDPOINT,
-    publish_interval_ms=int(settings.POLL_INTERVAL_SEC * 1000),
-)
-
+        endpoint=settings.OPCUA_ENDPOINT,
+        publish_interval_ms=int(settings.POLL_INTERVAL_SEC * 1000),
+    )
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
@@ -36,6 +37,15 @@ def create_app() -> FastAPI:
             await asyncio.gather(*app.state.tasks, return_exceptions=True)
 
     app = FastAPI(title="RPI OPC UA Client + REST + Web", lifespan=lifespan)
+
+    app.add_middleware(
+        SessionMiddleware,
+        secret_key=settings.SESSION_SECRET,
+        same_site="lax",
+        https_only=False,  # bei HTTPS später auf True setzen
+    )
+
+    app.mount("/static", StaticFiles(directory="static"), name="static")
 
     app.include_router(api_router)
     app.include_router(web_router)

@@ -11,6 +11,10 @@ from ..config import TAGS_CONFIG
 
 router = APIRouter(prefix="/api", tags=["api"])
 
+def require_login(request: Request):
+    if request.session.get("authenticated") is not True:
+        raise HTTPException(status_code=401, detail="Nicht angemeldet")
+
 
 class SetTagBody(BaseModel):
     value: float | int | bool
@@ -22,7 +26,8 @@ def is_float_display_tag(name: str) -> bool:
 
 
 @router.get("/health")
-async def health():
+async def health(request: Request):
+    require_login(request)
     connected = any(t["quality"] in ("good", "written") for t in CURRENT_TAGS.values())
     return {
         "status": "ok" if connected else "degraded",
@@ -33,7 +38,8 @@ async def health():
 
 
 @router.get("/tags")
-async def get_all_tags():
+async def get_all_tags(request: Request):
+    require_login(request)
     return {
         "ts": now_ms(),
         "count": len(CURRENT_TAGS),
@@ -42,7 +48,8 @@ async def get_all_tags():
 
 
 @router.get("/tags/{name}")
-async def get_one_tag(name: str):
+async def get_one_tag(name: str, request: Request):
+    require_login(request)
     tag = CURRENT_TAGS.get(name)
     if not tag:
         raise HTTPException(status_code=404, detail=f"Tag '{name}' not found")
@@ -51,6 +58,7 @@ async def get_one_tag(name: str):
 
 @router.post("/tags/{name}")
 async def set_one_tag(name: str, body: SetTagBody, request: Request):
+    require_login(request)
     if name not in TAGS_CONFIG:
         raise HTTPException(status_code=404, detail=f"Tag '{name}' not configured")
 
