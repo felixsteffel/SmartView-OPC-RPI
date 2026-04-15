@@ -1,4 +1,4 @@
-### RPI OPC UA Client + Web UI 
+# RPI OPC UA Client + Web UI 
 ## Beschreibung
 Diese Anwendung liest Daten von einer Siemens S7-1500 CPU, die einen OPC UA Server bereitstellt.
 
@@ -14,38 +14,38 @@ Zusätzlich werden angezeigt:
 
 Dadurch können nach Erweiterungen auch mehrere Anlagen verknüpft Visualisiert und die Daten zentral gesammelt auf einem Server bereitgestellt werden.
 
-# Setup
+### Setup
 Auf dem Raspberry PI ist Raspberry OS installiert und der Code wurde vollständig in VS Code in Python geschrieben. Die notwenigen Bibliotheken sind unter "requirements.txt" zu finden.
 Die Datei auf GitHub public hochgeladen, damit es vom RPI aus geclont werden kann: 
 https://github.com/felixsteffel/SmartView-OPC-RPI
 Branch: main
 
 
-# Starten der Anwendung
+### Starten der Anwendung
 uv run uvicorn main:app --host 0.0.0.0 --port 8000
 Anmeldedaten: ADMIN - 9865
 
-# Beenden
+### Beenden
 Ctrl + C
 
 
 ## Zugriff im Browser
-# Lokal
+### Lokal
 http://localhost:8000
 http://localhost:8000/api/tags
 
-# Im Netzwerk (Raspberry Pi)
+### Im Netzwerk (Raspberry Pi)
 http://10.9.229.187:8000/
 http://10.9.229.187:8000/api/tags
 
-# Netzwerk / Geräte
+### Netzwerk / Geräte
 Gerät	IP-Adresse
 Raspberry Pi	10.9.229.187
 SPS (S7-1500)	192.168.3.12
 OPCUA Endpoint opc.tcp://192.168.3.12:4840
 
 
-# Hinweise
+### Hinweise
 Die Daten werden per Subscription aktualisiert, der Server sendet also aktiv die Daten an den Client.
 Die Weboberfläche aktualisiert sich automatisch.
 

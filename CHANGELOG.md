@@ -1,81 +1,118 @@
-09.02.2026
-An der CPU:
-1. OPC UA Server aktivieren
-    1) Prüfen: CPU kann OPC UA Server
-        • S7-1500: meist integriert (je nach CPU/Firmware)
-        • S7-1200: nur bestimmte Firmware/Modelle unterstützen OPC UA
-    Wenn der Menüpunkt OPC UA im TIA nicht auftaucht, fehlt oft Support/Option oder die Firmware/CPU kann’s nicht.
-    
-2. Variablen/DBs für OPC UA freigeben (Tags publizieren)
-    2) OPC UA Server in der CPU aktivieren
-    TIA Portal → Geräte & Netze → CPU → Eigenschaften
-        • OPC UA (oder “OPC UA Server”) aktivieren
-        • Endpoint/Port prüfen (Standard: opc.tcp://<cpu-ip>:4840)
-        • Servername/Anwendung (optional) setzen
-    
-3. Security/Benutzer/Zertifikate so einstellen, dass dein RPi lesen darf
-    3) Variablen für OPC UA freigeben (die wichtigsten Schritte)
-    OPC UA liefert nicht automatisch alle DB-Werte – du musst sie publizieren:
-    Variante A (typisch/empfohlen): über “OPC UA Server Interface”
-        • CPU → OPC UA → Server-Schnittstelle / Address Space
-        • Dort Tags/Variablen hinzufügen, die du lesen willst:
-            ○ REAL, BOOL aus DBs, Merker, Ein-/Ausgänge usw.
-        • Danach werden sie im OPC UA-Adressraum sichtbar → du bekommst NodeIds
-    Variante B: “Symbolische” Freigabe (je nach Projekt/CPU)
-        ○ Sicherstellen, dass die Variablen symbolisch erreichbar sind und nicht optimiert blockiert werden (siehe Punkt 4)
+# Changelog
 
+Alle wichtigen Änderungen und Fortschritte des Projekts werden hier dokumentiert.
 
-23.02.2026
+---
 
-    - Desktop-Verbindung über VNC kabellos auf RPI herstellen
-    - VS Code auf RPI installieren
-    - Code für Server Frontend (HTML) sowie und API - Schnittstelle für Datenaustausch hinzufügen
-    - Git auf Entwicklungs-PC installiert und von VSCode in Github geladen:
-        ○ Venv nicht mit hochladen, da es eine Virtuelle Umgebung ist (.gitignore erstellt)
-        ○ Commit hinzufügen: git add .
-        ○ Commit erstellen: git commit -m "Initial commit"
-        ○ Remote Pfad hinzufügen: git remote add origin https://github.com/felixsteffel/SmartView-OPC-RPI.git
-        ○ Branch auf Main setzten: git branch -M main
-        ○ Hochladen: git push -u origin main
-        
-        ○ Updates über: 
-        git add .
-        git commit -m "Update"
-        git push
-        
-        ○ Neuer Branch:
-        git checkout -b feature/opcua-fix
-        git add .
-        git commit -m "Fix OPC UA NodeIds"
-        git push -u origin feature/opcua-fix
+## [2026-04-15]
 
+### ✨ Features
+- Weboberfläche visuell überarbeitet:
+  - Hintergrundbild der Anlage integriert (Förderband)
+  - Panels direkt auf der Grafik positioniert
+- Session-basierte Authentifizierung hinzugefügt:
+  - Login mit Username & Passwort
+  - Session bleibt im Browser (Cookies) gespeichert
+- Grenzwertüberwachung implementiert:
+  - Warnmeldung bei Druck > 7 bar (Overlay im UI)
 
-02.03.2026
-    - Überprüfen, ob Python installiert ist (RPI) --> Ja
-    - Überprüfen, ob GIT installiert ist (RPI)  --> Ja
-    - Projekt aus Git holen:   
-    cd ~
-    git clone https://github.com/felixsteffel/SmartView-OPC-RPI.git
-    cd SmartView-OPC-RPI
-    - Uv installieren:
-    curl -Ls https://astral.sh/uv/install.sh | sh
-    source $HOME/.local/bin/env
-    - Virtuelle umgebung starten
-    curl -Ls https://astral.sh/uv/install.sh | sh
-    source $HOME/.local/bin/env
-    - Starten: uv run uvicorn main:app --host 0.0.0.0 --port 8000
+---
 
-23.03.2026
-    - debug skript, um NodeIds herauszufinden (debug2.py)
-    - Verbindung zur SPS hergestellt, NodeIds angepasst (2-->3)
-    - Anpassungen Druckumrechnung
+## [2026-04-13]
 
-13.04.2026
-    - Subsciption statt Polling abgeändert
-    - Backend für "Write" mit eingebaut, um ausgänge auch schreiben zu können
-    - Readme überarbeitet
+### 🔧 Änderungen
+- Kommunikation von Polling auf **OPC UA Subscription** umgestellt
+  - Echtzeit-Updates statt zyklischem Abfragen
 
-15.04.2026
-    - Hintergrund der Weboberfläche geändert, sodass das Förderband als Grafik vorhanden ist
-    - Anmeldung über Session-based Authentication (Bleibt in den Cookies gespeichert)
-    - Grenzwert bei 7 bar führt zu einer Fehlermeldung
+### ✨ Features
+- Schreibfunktion (Write) implementiert:
+  - Werte können über Weboberfläche an die SPS gesendet werden
+  - Integration in REST API (`POST /api/tags/{name}`)
+
+### 📝 Dokumentation
+- README überarbeitet und erweitert
+
+---
+
+## [2026-03-23]
+
+### 🔧 Änderungen
+- Debug-Skript (`debug2.py`) erstellt zur Analyse von NodeIds
+- OPC UA Verbindung erfolgreich hergestellt
+- NodeIds angepasst (`ns=2` → `ns=3`)
+- Umrechnung für Druckwerte korrigiert (DWORD → FLOAT)
+
+---
+
+## [2026-03-02]
+
+### ⚙️ Setup Raspberry Pi
+- Python und Git überprüft und bestätigt
+- Projekt von GitHub geklont:
+  - `git clone https://github.com/felixsteffel/SmartView-OPC-RPI.git`
+- `uv` installiert und virtuelle Umgebung eingerichtet
+- Anwendung gestartet mit:
+  - `uv run uvicorn main:app --host 0.0.0.0 --port 8000`
+
+---
+
+## [2026-02-23]
+
+### 🖥️ Entwicklung & Infrastruktur
+- VNC-Verbindung zum Raspberry Pi eingerichtet
+- VS Code auf dem RPi installiert
+
+### ✨ Features
+- Backend (FastAPI) erstellt:
+  - REST API für Tags
+- Frontend entwickelt:
+  - HTML-basierte Visualisierung der Prozessdaten
+
+### 🔧 Git Setup
+- Repository erstellt und initialisiert
+- `.gitignore` hinzugefügt (virtuelle Umgebung ausgeschlossen)
+
+### 📦 Git Workflow
+- Initialer Commit:
+  - `git add .`
+  - `git commit -m "Initial commit"`
+- Remote Repository verbunden:
+  - `git remote add origin https://github.com/felixsteffel/SmartView-OPC-RPI.git`
+  - `git branch -M main`
+  - `git push -u origin main`
+
+### 🔄 Updates
+- `git add .`
+- `git commit -m "Update"`
+- `git push`
+
+### 🌿 Feature Branch
+- `git checkout -b feature/opcua-fix`
+- `git add .`
+- `git commit -m "Fix OPC UA NodeIds"`
+- `git push -u origin feature/opcua-fix`
+
+---
+
+## [2026-02-09]
+
+### ⚙️ OPC UA Einrichtung (TIA Portal)
+
+#### 1. OPC UA Server aktivieren
+- CPU muss OPC UA unterstützen:
+  - S7-1500: meist integriert
+  - S7-1200: abhängig von Modell/Firmware
+- Aktivierung im TIA Portal:
+  - CPU → Eigenschaften → OPC UA Server aktivieren
+  - Endpoint prüfen:
+    - `opc.tcp://<cpu-ip>:4840`
+
+#### 2. Variablen freigeben (Adressraum)
+- OPC UA Server Interface konfigurieren:
+  - Tags manuell hinzufügen (DB, Merker, Ein-/Ausgänge)
+- Alternativ:
+  - Symbolische Variablen freigeben (abhängig von CPU)
+
+#### 3. Sicherheit konfigurieren
+- Benutzer, Rechte und Zertifikate definieren
+- Zugriff für Raspberry Pi erlauben
