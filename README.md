@@ -67,6 +67,7 @@ FastAPI (/api/tags)
    ▼
 Web UI (Browser)
 ```
+<img width="1317" height="882" alt="image" src="https://github.com/user-attachments/assets/8ff1390d-b681-4fdb-af96-088a7d9009b3" />
 
 ## Team
 Felix Steffel
